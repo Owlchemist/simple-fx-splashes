@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+	<FleckDef ParentName="FleckBase_Thrown">
+		<defName>Owl_Splash</defName>
+		<graphicData>
+			<texPath>Things/Mote/owl_splash</texPath>
+			<renderInstanced>true</renderInstanced>
+			<drawSize>(0.1, 0.1)</drawSize>
+		</graphicData>
+		<altitudeLayer>MoteOverhead</altitudeLayer>
+		<solidTime>0.4</solidTime>
+		<fadeOutTime>0.175</fadeOutTime>
+		<growthRate>12</growthRate>
+	</FleckDef>
+</Defs>
