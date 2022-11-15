@@ -4,6 +4,7 @@ using RimWorld;
 using UnityEngine;
 using UnityEngine.Rendering;
 using System.Collections.Generic;
+using System.Reflection;
 using static SimpleFxSplashes.SplashesUtility;
  
 namespace SimpleFxSplashes
@@ -145,5 +146,22 @@ namespace SimpleFxSplashes
             dirty = false;
             return false;
         }
+
+		[HarmonyPatch]
+		class ResetCacheTriggers
+		{
+			static IEnumerable<MethodBase> TargetMethods()
+			{
+				//If options are changed..
+				yield return AccessTools.Method(typeof(Game), nameof(Game.LoadGame));
+				//If colonist portrait is being dragged n' dropped...
+				yield return AccessTools.Method(typeof(Game), nameof(Game.InitNewGame));
+			}
+
+			static void Prefix()
+			{
+				ResetCache();
+			}
+		}
     }
 }

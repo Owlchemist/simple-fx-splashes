@@ -141,5 +141,12 @@ namespace SimpleFxSplashes
 				activeMapID = map.uniqueID;
 			}
 		}
+
+		public static void ResetCache()
+		{
+			hardGrids.Clear();
+			activeMapHardGrid = null;
+			fleckSystemCache = null;
+		}
 	}
 }
