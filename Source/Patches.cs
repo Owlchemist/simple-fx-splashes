@@ -34,7 +34,7 @@ namespace SimpleFxSplashes
         }
     }
 
-    //Build the terrain cache
+    //The main process loop is attached to the weather ticker
 	[HarmonyPatch(typeof(WeatherDecider), nameof(WeatherDecider.WeatherDeciderTick))]
 	public class Patch_WeatherDeciderTick
 	{
@@ -146,22 +146,23 @@ namespace SimpleFxSplashes
             dirty = false;
             return false;
         }
-
-		[HarmonyPatch]
-		class ResetCacheTriggers
-		{
-			static IEnumerable<MethodBase> TargetMethods()
-			{
-				//If options are changed..
-				yield return AccessTools.Method(typeof(Game), nameof(Game.LoadGame));
-				//If colonist portrait is being dragged n' dropped...
-				yield return AccessTools.Method(typeof(Game), nameof(Game.InitNewGame));
-			}
-
-			static void Prefix()
-			{
-				ResetCache();
-			}
-		}
     }
+
+	//Flush the cache on reloads
+	[HarmonyPatch]
+	class ResetCacheTriggers
+	{
+		static IEnumerable<MethodBase> TargetMethods()
+		{
+			//If options are changed..
+			yield return AccessTools.Method(typeof(Game), nameof(Game.LoadGame));
+			//If colonist portrait is being dragged n' dropped...
+			yield return AccessTools.Method(typeof(Game), nameof(Game.InitNewGame));
+		}
+
+		static void Prefix()
+		{
+			ResetCache();
+		}
+	}
 }
