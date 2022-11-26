@@ -1,10 +1,9 @@
 using HarmonyLib;
 using Verse;
 using RimWorld;
+using RimWorld.Planet;
 using UnityEngine;
 using UnityEngine.Rendering;
-using System.Collections.Generic;
-using System.Reflection;
 using static SimpleFxSplashes.SplashesUtility;
  
 namespace SimpleFxSplashes
@@ -35,22 +34,14 @@ namespace SimpleFxSplashes
     }
 
     //The main process loop is attached to the weather ticker
-	[HarmonyPatch(typeof(WeatherDecider), nameof(WeatherDecider.WeatherDeciderTick))]
-	public class Patch_WeatherDeciderTick
+	[HarmonyPatch(typeof(Map), nameof(Map.MapPostTick))]
+	public class Patch_MapPostTick 
 	{
-        //static HashSet<int> rainingMaps = new HashSet<int>();
-        //static int ticker = 299;
-		static public void Postfix(Map ___map)
+		static public void Postfix(Map __instance)
 		{
-			/*
-            if (++ticker == 300) 
-            {
-                ticker = 0;
-                if (___map.weatherManager.RainRate > 0.2f) rainingMaps.Add(___map.uniqueID);
-				else rainingMaps.Remove(___map.uniqueID);
-            }
-			*/
-            if (___map.weatherManager.curWeather.rainRate > 0 && activeMapID == ___map.uniqueID) SplashesUtility.ProcessSplashes(___map);
+            if (activeMapID == __instance.uniqueID && 
+			__instance.weatherManager.curWeather.rainRate > 0f && 
+			__instance.weatherManager.curWeather.snowRate == 0f) SplashesUtility.ProcessSplashes(__instance);
         }
     }
 
@@ -70,28 +61,31 @@ namespace SimpleFxSplashes
 	[HarmonyPatch(typeof(Game), nameof(Game.DeinitAndRemoveMap))]
 	public class Patch_DeinitAndRemoveMap
 	{
-		static public void Postfix(Map __instance)
+		static public void Postfix(Map map)
 		{
-			if (__instance != null)
+			if (map != null)
 			{
-				hardGrids.Remove(__instance.uniqueID);
-                hardGrids.TryGetValue(Find.CurrentMap?.uniqueID ?? -1, out activeMapHardGrid);
+				hardGrids.Remove(map.uniqueID);
+				SetActiveGrid(Find.CurrentMap);
 			}
 		}
 	}
 
     //Optimized weather overlays
 	[HarmonyPatch(typeof(SkyOverlay), nameof(SkyOverlay.DrawOverlay))]
+	[HarmonyPriority(Priority.Last)]
     public class Patch_ReplaceOverlay
 	{
-        static Matrix4x4 worldMatrix = default(Matrix4x4);
-        static Matrix4x4 screenMatrix = default(Matrix4x4);
+        static Matrix4x4 worldMatrix = default(Matrix4x4), screenMatrix = default(Matrix4x4);
         static int mapID = -1;
         static bool dirty;
+		static bool Prepare()
+		{
+			return ModSettings_SimpleFxSplashes.optimizeOverlay;
+		}
 		static public bool Prefix(SkyOverlay __instance, Map map)
 		{
-            if (!ModSettings_SimpleFxSplashes.optimizeOverlay) return true;
-            if (mapID != map.uniqueID) dirty = true;
+            dirty = mapID != map.uniqueID;
             if (!object.ReferenceEquals(__instance.worldOverlayMat, null))
 			{
                 if (dirty)
@@ -143,24 +137,15 @@ namespace SimpleFxSplashes
 					null //LightProbeProxyVolume
 				);
 			}
-            dirty = false;
             return false;
         }
     }
 
 	//Flush the cache on reloads
-	[HarmonyPatch]
+	[HarmonyPatch(typeof(World), nameof(World.FinalizeInit))]
 	class ResetCacheTriggers
 	{
-		static IEnumerable<MethodBase> TargetMethods()
-		{
-			//If options are changed..
-			yield return AccessTools.Method(typeof(Game), nameof(Game.LoadGame));
-			//If colonist portrait is being dragged n' dropped...
-			yield return AccessTools.Method(typeof(Game), nameof(Game.InitNewGame));
-		}
-
-		static void Prefix()
+		static void Postfix()
 		{
 			ResetCache();
 		}

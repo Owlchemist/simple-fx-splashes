@@ -6,20 +6,20 @@ using System.Collections.Generic;
 
 namespace SimpleFxSplashes
 {
+	[StaticConstructorOnStartup]
 	public static class SplashesUtility
 	{
 		public static HashSet<ushort> hardTerrains;
 		public static Dictionary<int, Vector3[]> hardGrids = new Dictionary<int, Vector3[]>();
 		public static Vector3[] activeMapHardGrid;
-		static FastRandom fastRandom = new FastRandom();
+		public static FastRandom fastRandom = new FastRandom();
 		public static FleckSystem fleckSystemCache;
-		static float cachedAltitude;
 		public static int splashRate = 40, arrayChunks = 0, chunkIndex = 0, adjustedSplashRate = 40, activeMapID = -1;
 		//public const int splashRateMax = 50, splashRateMin = 30;
 		const int chunkSize = 1000;
 
 		//Happens once on game start, goes through the database to find defs it think is hard and rain would bounce off of
-		public static void Setup()
+		static SplashesUtility()
 		{
 			List<ushort> workingList = new List<ushort>();
 			List<string> report = new List<string>();
@@ -50,8 +50,6 @@ namespace SimpleFxSplashes
 			}
 			hardTerrains = workingList.ToHashSet();
 			if (Prefs.DevMode) Log.Message("[Simple FX: Splashes] The following terrains have been defined as being hard:\n - " + string.Join("\n - ", report));
-
-			cachedAltitude = ResourceBank.FleckDefOf.Owl_Splash.altitudeLayer.AltitudeFor(ResourceBank.FleckDefOf.Owl_Splash.altitudeLayerIncOffset);
 		}
 
 		public static void ProcessSplashes(Map map)
@@ -69,9 +67,9 @@ namespace SimpleFxSplashes
 				{
 					if (fastRandom.Next(adjustedSplashRate) == 0)
 					{
-						FleckCreationData dataStatic = FleckMaker.GetDataStatic(activeMapHardGrid[i], map, ResourceBank.FleckDefOf.Owl_Splash, ModSettings_SimpleFxSplashes.sizeMultiplier);
-						dataStatic.spawnPosition.y = cachedAltitude;
-						fleckSystemCache.CreateFleck(dataStatic);
+						var splashAt = activeMapHardGrid[i];
+						if (!CameraDriver.lastViewRect.Contains(splashAt.ToIntVec3())) continue;
+						fleckSystemCache.CreateFleck(FleckMaker.GetDataStatic(splashAt, map, ResourceBank.FleckDefOf.Owl_Splash, ModSettings_SimpleFxSplashes.sizeMultiplier));
 					}
 				}
 				if (++chunkIndex == arrayChunks) chunkIndex = 0;
@@ -95,7 +93,7 @@ namespace SimpleFxSplashes
                 if (hardTerrains.Contains(terrainDef.index) && 
 					(!terrainDef.natural || fastRandom.Next(100) < (ModSettings_SimpleFxSplashes.natureFilter * 100)) && 
 					map.roofGrid.roofGrid[i] == null && 
-					!map.fogGrid.fogGrid[i]) workingList.Add(map.cellIndices.IndexToCell(i).ToVector3().RandomOffset());
+					!map.fogGrid.fogGrid[i]) workingList.Add(map.cellIndices.IndexToCell(i).ToVector3Fast().RandomOffset());
             }
 
 			//Record
@@ -110,29 +108,24 @@ namespace SimpleFxSplashes
 		public static void UpdateCache(Map map, IntVec3 c, TerrainDef def = null)
 		{
 			fastRandom.Reinitialise(map.uniqueID); //Make sure the vectors match
-			Vector3 vector = c.ToVector3().RandomOffset();
+			Vector3 vector = c.ToVector3Fast().RandomOffset();
 			if (hardGrids.TryGetValue(map?.uniqueID ?? -1, out Vector3[] hardGrid))
 			{
 				//Filter out this cell
 				var workingList = hardGrid.Where(x => x != vector).ToList();
 				//Add the new cell if relevant
 				if (def == null) def = map.terrainGrid.TerrainAt(map.cellIndices.CellToIndex(c));
-				if (hardTerrains.Contains(def.index)) workingList.Add(vector);
+				if (hardTerrains.Contains(def.index) && !c.Roofed(map)) workingList.Add(vector);
 				//Push the array back out
 				hardGrids[map.uniqueID] = workingList.ToArray();
 				SetActiveGrid(map);
 			}
 		}
-
-		static Vector3 RandomOffset(this Vector3 vector)
-		{
-			return new Vector3(vector.x + ((fastRandom.Next(100) - 50) / 100f), vector.y, vector.z + ((fastRandom.Next(100) - 50) / 100f));
-		}
-
+		
 		public static void SetActiveGrid(Map map)
 		{
 			//Update the active grid.
-			if (Find.CurrentMap?.uniqueID == map.uniqueID && hardGrids.TryGetValue(map.uniqueID, out activeMapHardGrid))
+			if (map != null && Find.CurrentMap?.uniqueID == map.uniqueID && hardGrids.TryGetValue(map.uniqueID, out activeMapHardGrid))
 			{
 				arrayChunks = (int)System.Math.Ceiling(activeMapHardGrid.Length / (float)chunkSize);
 				chunkIndex = 0;

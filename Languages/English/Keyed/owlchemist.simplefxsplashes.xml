@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
 	<SimpleFxSplashes.Settings.OptimizeOverlay>Optimize weather overlays</SimpleFxSplashes.Settings.OptimizeOverlay>
-	<SimpleFxSplashes.Settings.OptimizeOverlay.Desc>Enable the optimized weather overlay drawer. You can disable this if you encounter a mod conflict.</SimpleFxSplashes.Settings.OptimizeOverlay.Desc>
+	<SimpleFxSplashes.Settings.OptimizeOverlay.Desc>Enable the optimized weather overlay drawer. You can disable this if you encounter a mod conflict. Changing this requires a game restart.</SimpleFxSplashes.Settings.OptimizeOverlay.Desc>
 	
 	<SimpleFxSplashes.Settings.SizeMultiplier>Splash size (Mod default: {0}, Min: {1}, Max: {2}): </SimpleFxSplashes.Settings.SizeMultiplier>
 	<SimpleFxSplashes.Settings.SizeMultiplier.Desc>Adjust how big the splash particles are.</SimpleFxSplashes.Settings.SizeMultiplier.Desc>

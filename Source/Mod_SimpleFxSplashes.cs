@@ -10,9 +10,8 @@ namespace SimpleFxSplashes
 	{
 		public Mod_SimpleFxSplashes(ModContentPack content) : base(content)
 		{
-			new Harmony(this.Content.PackageIdPlayerFacing).PatchAll();
 			base.GetSettings<ModSettings_SimpleFxSplashes>();
-			LongEventHandler.QueueLongEvent(() => SplashesUtility.Setup(), null, false, null);
+			new Harmony(this.Content.PackageIdPlayerFacing).PatchAll();
 		}
 
 		public override void DoSettingsWindowContents(Rect inRect)
@@ -49,10 +48,10 @@ namespace SimpleFxSplashes
 	{
 		public override void ExposeData()
 		{
-			Scribe_Values.Look<bool>(ref optimizeOverlay, "optimizeOverlay", true, false);
-			Scribe_Values.Look<float>(ref sizeMultiplier, "sizeMultiplier", 1f, false);
-			Scribe_Values.Look<float>(ref splashRarity, "splashMultiplier", 1f, false);
-			Scribe_Values.Look<float>(ref natureFilter, "natureFilter", 0.1f, false);
+			Scribe_Values.Look<bool>(ref optimizeOverlay, "optimizeOverlay", true);
+			Scribe_Values.Look<float>(ref sizeMultiplier, "sizeMultiplier", 1f);
+			Scribe_Values.Look<float>(ref splashRarity, "splashMultiplier", 1f);
+			Scribe_Values.Look<float>(ref natureFilter, "natureFilter", 0.1f);
 			base.ExposeData();
 		}
 
