@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 namespace SimpleFxSplashes
 {
+	public class HardSurface : DefModExtension {}
+	public class HardStuff : DefModExtension {}
+
 	[StaticConstructorOnStartup]
 	public static class SplashesUtility
 	{
@@ -24,31 +27,41 @@ namespace SimpleFxSplashes
 			List<ushort> workingList = new List<ushort>();
 			List<string> report = new List<string>();
 			
-			//Go through every terrain in the game
-			foreach (TerrainDef terrainDef in DefDatabase<TerrainDef>.AllDefsListForReading)
+			HashSet<StuffCategoryDef> hardStuff = new HashSet<StuffCategoryDef>();
+			for (int i = DefDatabase<StuffCategoryDef>.defsList.Count; i-- > 0;)
 			{
+				var thingDef = DefDatabase<StuffCategoryDef>.defsList[i];
+				if (thingDef.HasModExtension<HardStuff>()) hardStuff.Add(thingDef);
+			}
+			
+			//Go through every terrain in the game
+			for (int i = DefDatabase<TerrainDef>.defsList.Count; i-- > 0;)
+			{
+				var terrainDef = DefDatabase<TerrainDef>.defsList[i];
+				bool flag = false;
 				//Does it have a cost?
 				if (terrainDef.costList != null)
 				{
 					//Look through the costs
-					foreach (ThingDefCountClass thingDefCountClass in terrainDef.costList)
+					for (int j = terrainDef.costList.Count; j-- > 0;)
 					{
+						var thingDefCountClass = terrainDef.costList[j];
 						//See if any of them are metallatic or stony, which we define as hard surfaces that rain would splash off of
-						if (thingDefCountClass.thingDef?.stuffProps?.categories?.Any(x => x == ResourceBank.StuffCategoryDefOf.Metallic || x == ResourceBank.StuffCategoryDefOf.Stony) ?? false)
+						if (thingDefCountClass.thingDef?.stuffProps?.categories?.Any(x => hardStuff.Contains(x)) ?? false)
 						{
-							workingList.Add(terrainDef.index);
-							report.Add(terrainDef.label);
+							flag = true;
 							break;
 						}
 					}
 				}
-				else if (terrainDef.defName.Contains("_Rough"))
+				else if (terrainDef.HasModExtension<HardSurface>() || terrainDef.defName.Contains("_Rough")) flag = true;
+				if (flag)
 				{
 					workingList.Add(terrainDef.index);
 					report.Add(terrainDef.label);
 				}
 			}
-			hardTerrains = workingList.ToHashSet();
+			hardTerrains = new HashSet<ushort>(workingList);
 			if (Prefs.DevMode) Log.Message("[Simple FX: Splashes] The following terrains have been defined as being hard:\n - " + string.Join("\n - ", report));
 		}
 
@@ -111,13 +124,37 @@ namespace SimpleFxSplashes
 			Vector3 vector = c.ToVector3Fast().RandomOffset();
 			if (hardGrids.TryGetValue(map?.uniqueID ?? -1, out Vector3[] hardGrid))
 			{
-				//Filter out this cell
-				var workingList = hardGrid.Where(x => x != vector).ToList();
 				//Add the new cell if relevant
 				if (def == null) def = map.terrainGrid.TerrainAt(map.cellIndices.CellToIndex(c));
-				if (hardTerrains.Contains(def.index) && !c.Roofed(map)) workingList.Add(vector);
-				//Push the array back out
-				hardGrids[map.uniqueID] = workingList.ToArray();
+				bool isHard = hardTerrains.Contains(def.index) && !c.Roofed(map);
+				
+				//Filter out this cell
+				if (isHard)
+				{
+					for (int i = hardGrid.Length; i-- > 0;) if (vector == hardGrid[i]) return; //No changes needed
+					
+					//Not found, so append a new vector3 record to the end of the array
+					var newLength = hardGrid.Length + 1;
+					Vector3[] replacementArray = new Vector3[newLength];
+					System.Array.Copy(hardGrid, replacementArray, newLength - 1);
+					replacementArray[newLength - 1] = vector;
+					hardGrids[map.uniqueID] = replacementArray;
+				}
+				else
+				{
+					Vector3[] replacementArray = new Vector3[hardGrid.Length - 1];
+					bool oldArrayIsDirty = false;
+					for (int i = replacementArray.Length; i-- > 0;)
+					{
+						var tmp = hardGrid[i];
+						if (vector != tmp) replacementArray[i] = tmp;
+						else oldArrayIsDirty = true;
+					}
+					//Not found, no changes needed
+					if (oldArrayIsDirty) hardGrids[map.uniqueID] = replacementArray;
+					else return;
+				}
+
 				SetActiveGrid(map);
 			}
 		}

@@ -6,6 +6,7 @@
 	<supportedVersions>
 		<li>1.4</li>
 	</supportedVersions>
+	<modVersion>1.2</modVersion>
 	<description>
 		A graphical mod that helps sell the illusion of rain interacting with the world by adding splashes to hard surfaces.
 	</description>

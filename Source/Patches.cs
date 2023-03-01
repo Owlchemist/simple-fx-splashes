@@ -58,7 +58,7 @@ namespace SimpleFxSplashes
     public class Patch_SetRoof { static public void Postfix(RoofGrid __instance, IntVec3 c) { UpdateCache(__instance.map, c, null); } }
 
     //Update cache if a map is removed
-	[HarmonyPatch(typeof(Game), nameof(Game.DeinitAndRemoveMap))]
+	[HarmonyPatch(typeof(Game), nameof(Game.DeinitAndRemoveMap_NewTemp))]
 	public class Patch_DeinitAndRemoveMap
 	{
 		static public void Postfix(Map map)

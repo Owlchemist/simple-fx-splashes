@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+	<Operation Class="PatchOperationSequence">
+		<operations>
+			<li Class="PatchOperationAddModExtension">
+				<xpath>Defs/TerrainDef[defName="BrokenAsphalt"]</xpath>
+				<value>
+					<li Class="SimpleFxSplashes.HardSurface" />
+				</value>
+			</li>
+			<li Class="PatchOperationAddModExtension">
+				<xpath>Defs/StuffCategoryDef[defName="Metallic" or defName="Stony"]</xpath>
+				<value>
+					<li Class="SimpleFxSplashes.HardStuff" />
+				</value>
+			</li>
+			<!-- Aside from these, one thing that remains hardcoded are the "_Rough" terrains that are generated in c#, done after XML patching.  -->
+		</operations>
+	</Operation>
+</Patch>
