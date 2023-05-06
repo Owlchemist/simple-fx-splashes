@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-	<SimpleFxSplashes.Settings.OptimizeOverlay>Optimize weather overlays</SimpleFxSplashes.Settings.OptimizeOverlay>
-	<SimpleFxSplashes.Settings.OptimizeOverlay.Desc>Enable the optimized weather overlay drawer. You can disable this if you encounter a mod conflict. Changing this requires a game restart.</SimpleFxSplashes.Settings.OptimizeOverlay.Desc>
-	
-	<SimpleFxSplashes.Settings.SizeMultiplier>Splash size (Mod default: {0}, Min: {1}, Max: {2}): </SimpleFxSplashes.Settings.SizeMultiplier>
+	<SimpleFxSplashes.Settings.SizeMultiplier>Splash size (default: {0}): {3}</SimpleFxSplashes.Settings.SizeMultiplier>
 	<SimpleFxSplashes.Settings.SizeMultiplier.Desc>Adjust how big the splash particles are.</SimpleFxSplashes.Settings.SizeMultiplier.Desc>
 	
-	<SimpleFxSplashes.Settings.SplashRarity>Splash rarity (Mod default: {0}, Min: {1}, Max: {2}): </SimpleFxSplashes.Settings.SplashRarity>
+	<SimpleFxSplashes.Settings.SplashRarity>Splash rarity (default: {0}): {3}</SimpleFxSplashes.Settings.SplashRarity>
 	<SimpleFxSplashes.Settings.SplashRarity.Desc>Lowering this will spawn more splash particle, and increasing will make them rarer. This impacts performance.</SimpleFxSplashes.Settings.SplashRarity.Desc>
 	
-	<SimpleFxSplashes.Settings.FilterNature>Filter natural tiles (Mod default: {0}, Min: {1}, Max: {2}): </SimpleFxSplashes.Settings.FilterNature>
+	<SimpleFxSplashes.Settings.FilterNature>Filter natural tiles (default: {0}): {3}</SimpleFxSplashes.Settings.FilterNature>
 	<SimpleFxSplashes.Settings.FilterNature.Desc>A reduction on natural cells (such as rough stone) allowed to splash rain. Only allow {0}% of natural tiles to splash rain. Increasing this impacts performance.</SimpleFxSplashes.Settings.FilterNature.Desc>
 </LanguageData>

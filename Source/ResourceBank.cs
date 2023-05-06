@@ -7,17 +7,10 @@ namespace SimpleFxSplashes
     [StaticConstructorOnStartup]
     public static class ResourceBank
     {
-		[DefOf]
-		public static class FleckDefOf
+		[RimWorld.DefOf]
+		public static class DefOf
         {
             public static FleckDef Owl_Splash;
-        }
-
-        [DefOf]
-		public static class StuffCategoryDefOf
-        {
-            public static StuffCategoryDef Metallic;
-            public static StuffCategoryDef Stony;
         }
     }
 }

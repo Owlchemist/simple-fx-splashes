@@ -18,16 +18,15 @@ namespace SimpleFxSplashes
 		{
 			Listing_Standard options = new Listing_Standard();
 			options.Begin(inRect);
-			options.CheckboxLabeled("SimpleFxSplashes.Settings.OptimizeOverlay".Translate(), ref optimizeOverlay, "SimpleFxSplashes.Settings.OptimizeOverlay.Desc".Translate());
-			options.Gap();
-			options.Label("SimpleFxSplashes.Settings.SizeMultiplier".Translate("1", "0.5", "2") + Math.Round(sizeMultiplier, 1), -1f, "SimpleFxSplashes.Settings.SizeMultiplier.Desc".Translate());
+			options.Label("SimpleFxSplashes.Settings.SizeMultiplier".Translate("1", "0.5", "2", Math.Round(sizeMultiplier, 1)), -1f, "SimpleFxSplashes.Settings.SizeMultiplier.Desc".Translate());
 			sizeMultiplier = options.Slider(sizeMultiplier, 0.5f, 2f);
-			options.Label("SimpleFxSplashes.Settings.SplashRarity".Translate("1", "0.5", "2") + Math.Round(splashRarity, 1), -1f, "SimpleFxSplashes.Settings.SplashRarity.Desc".Translate());
+			
+			options.Label("SimpleFxSplashes.Settings.SplashRarity".Translate("1", "0.5", "2", Math.Round(splashRarity, 1)), -1f, "SimpleFxSplashes.Settings.SplashRarity.Desc".Translate());
 			splashRarity = options.Slider(splashRarity, 0.5f, 2f);
-			options.Label("SimpleFxSplashes.Settings.FilterNature".Translate("0.1", "0", "1") + Math.Round(natureFilter, 2), -1f, "SimpleFxSplashes.Settings.FilterNature.Desc".Translate((Math.Round(natureFilter, 2) * 100).ToString()));
+			
+			options.Label("SimpleFxSplashes.Settings.FilterNature".Translate("0.1", "0", "1", Math.Round(natureFilter, 2)), -1f, "SimpleFxSplashes.Settings.FilterNature.Desc".Translate((Math.Round(natureFilter, 2) * 100).ToString()));
 			natureFilter = options.Slider(natureFilter, 0f, 1f);
 			options.End();
-			base.DoSettingsWindowContents(inRect);
 		}
 
 		public override string SettingsCategory()
@@ -48,14 +47,11 @@ namespace SimpleFxSplashes
 	{
 		public override void ExposeData()
 		{
-			Scribe_Values.Look<bool>(ref optimizeOverlay, "optimizeOverlay", true);
-			Scribe_Values.Look<float>(ref sizeMultiplier, "sizeMultiplier", 1f);
-			Scribe_Values.Look<float>(ref splashRarity, "splashMultiplier", 1f);
-			Scribe_Values.Look<float>(ref natureFilter, "natureFilter", 0.1f);
+			Scribe_Values.Look(ref sizeMultiplier, "sizeMultiplier", 1f);
+			Scribe_Values.Look(ref splashRarity, "splashMultiplier", 1f);
+			Scribe_Values.Look(ref natureFilter, "natureFilter", 0.1f);
 			base.ExposeData();
 		}
-
-		public static bool optimizeOverlay = true;
 		public static float sizeMultiplier = 1f, splashRarity = 1f, natureFilter = 0.1f;
 	}
 }

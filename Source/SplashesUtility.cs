@@ -18,26 +18,27 @@ namespace SimpleFxSplashes
 		public static FastRandom fastRandom = new FastRandom();
 		public static FleckSystem fleckSystemCache;
 		public static int splashRate = 40, arrayChunks = 0, chunkIndex = 0, adjustedSplashRate = 40, activeMapID = -1;
-		//public const int splashRateMax = 50, splashRateMin = 30;
 		const int chunkSize = 1000;
 
-		//Happens once on game start, goes through the database to find defs it think is hard and rain would bounce off of
+		//Happens once on game start, goes through the database to find defs it thinks is hard and rain would bounce off of
 		static SplashesUtility()
 		{
 			List<ushort> workingList = new List<ushort>();
 			List<string> report = new List<string>();
 			
 			HashSet<StuffCategoryDef> hardStuff = new HashSet<StuffCategoryDef>();
-			for (int i = DefDatabase<StuffCategoryDef>.defsList.Count; i-- > 0;)
+			var list = DefDatabase<StuffCategoryDef>.defsList;
+			for (int i = list.Count; i-- > 0;)
 			{
-				var thingDef = DefDatabase<StuffCategoryDef>.defsList[i];
+				var thingDef = list[i];
 				if (thingDef.HasModExtension<HardStuff>()) hardStuff.Add(thingDef);
 			}
 			
 			//Go through every terrain in the game
-			for (int i = DefDatabase<TerrainDef>.defsList.Count; i-- > 0;)
+			var list2 = DefDatabase<TerrainDef>.defsList;
+			for (int i = list2.Count; i-- > 0;)
 			{
-				var terrainDef = DefDatabase<TerrainDef>.defsList[i];
+				var terrainDef = list2[i];
 				bool flag = false;
 				//Does it have a cost?
 				if (terrainDef.costList != null)
@@ -69,7 +70,7 @@ namespace SimpleFxSplashes
 		{
 			if (fastRandom.NextBool() && fastRandom.NextBool() && activeMapHardGrid != null) //This looks dumb, but it's gating more complex code behind 2 ultra-fast random bool checks.
 			{
-				if (fleckSystemCache == null) Find.CurrentMap.flecks.systems.TryGetValue(ResourceBank.FleckDefOf.Owl_Splash.fleckSystemClass, out fleckSystemCache);
+				if (fleckSystemCache == null) Find.CurrentMap.flecks.systems.TryGetValue(ResourceBank.DefOf.Owl_Splash.fleckSystemClass, out fleckSystemCache);
 
 				//Chunk start
 				int chunkStart = (int)(chunkIndex * chunkSize);
@@ -82,7 +83,7 @@ namespace SimpleFxSplashes
 					{
 						var splashAt = activeMapHardGrid[i];
 						if (!CameraDriver.lastViewRect.Contains(splashAt.ToIntVec3())) continue;
-						fleckSystemCache.CreateFleck(FleckMaker.GetDataStatic(splashAt, map, ResourceBank.FleckDefOf.Owl_Splash, ModSettings_SimpleFxSplashes.sizeMultiplier));
+						fleckSystemCache.CreateFleck(FleckMaker.GetDataStatic(splashAt, map, ResourceBank.DefOf.Owl_Splash, ModSettings_SimpleFxSplashes.sizeMultiplier));
 					}
 				}
 				if (++chunkIndex == arrayChunks) chunkIndex = 0;
@@ -92,13 +93,12 @@ namespace SimpleFxSplashes
 		public static void RebuildCache(Map map)
 		{
 			//First, ensure the key is set
-			if (!hardGrids.ContainsKey(map.uniqueID)) hardGrids.Add(map.uniqueID, null);
+			hardGrids.AddDistinct(map.uniqueID, null);
 
 			//Generate a working list
 			List<Vector3> workingList = new List<Vector3>();
-			var length = map.info.NumCells;
-			fastRandom.Reinitialise(map.uniqueID); //Keep random cells consisent
-			for (int i = 0; i < length; i++)
+			fastRandom.Reinitialise(map.uniqueID); //Keep random cells consistent
+			for (int i = map.info.NumCells; i-- > 0;)
             {
 				//Fetch the def cell by cell
                 TerrainDef terrainDef = map.terrainGrid.topGrid[i];
@@ -120,10 +120,21 @@ namespace SimpleFxSplashes
 
 		public static void UpdateCache(Map map, IntVec3 c, TerrainDef def = null)
 		{
+			if (map == null) return;
 			fastRandom.Reinitialise(map.uniqueID); //Make sure the vectors match
 			Vector3 vector = c.ToVector3Fast().RandomOffset();
-			if (hardGrids.TryGetValue(map?.uniqueID ?? -1, out Vector3[] hardGrid))
+			if (hardGrids.TryGetValue(map.uniqueID, out Vector3[] hardGrid))
 			{
+				if (hardGrid.NullOrEmpty())
+				{
+					hardGrid = new Vector3[map.info?.NumCells ?? 0];
+					if (hardGrid.NullOrEmpty())
+					{
+						Log.Warning("[Simple FX: Splashes] Could not setup cache for map ID #" + map.uniqueID);
+						return;
+					}
+				}
+
 				//Add the new cell if relevant
 				if (def == null) def = map.terrainGrid.TerrainAt(map.cellIndices.CellToIndex(c));
 				bool isHard = hardTerrains.Contains(def.index) && !c.Roofed(map);
